@@ -30,7 +30,7 @@ public struct LinkedList<Value> {
     }
     
     public mutating func push(_ value: Value) {
-        copyNodes(returningCopyOf: nil)
+        copyNodes()
         head = Node(value: value, next: head)
         if tail == nil {
             tail = head
@@ -38,7 +38,7 @@ public struct LinkedList<Value> {
     }
     
     public mutating func append(_ value: Value) {
-        copyNodes(returningCopyOf: nil)
+        copyNodes()
         guard !isEmpty else {
             push(value)
             return
@@ -63,7 +63,7 @@ public struct LinkedList<Value> {
     // discardableResult - callers can ignore the return value
     @discardableResult
     public mutating func insert(_ value: Value, after node: Node<Value>) -> Node<Value> {
-        copyNodes(returningCopyOf: nil)
+        copyNodes()
         // === two references point to the same object
         // !== is true if the two variables reference different objects with different addresses.
         guard tail !== node else {
@@ -79,7 +79,7 @@ public struct LinkedList<Value> {
     
     @discardableResult
     public mutating func pop() -> Value? {
-        copyNodes(returningCopyOf: nil)
+        copyNodes()
         // The code inside a defer block runs after the surrounding code finishes, but before the function returns.
         // Meaning it will return first and only then remove the head
         defer {
@@ -93,7 +93,7 @@ public struct LinkedList<Value> {
     
     @discardableResult
     public mutating func removeLast() -> Value? {
-        copyNodes(returningCopyOf: nil)
+        copyNodes()
         guard let head = head else { return nil }
         guard head.next != nil else { return pop() }
         
@@ -119,6 +119,21 @@ public struct LinkedList<Value> {
             node.next = node.next?.next
         }
         return node.next?.value
+    }
+    
+    private mutating func copyNodes() {
+        guard var oldNode = head else { return }
+        head = Node(value: oldNode.value)
+        var newNode = head
+        
+        while let nextOldNode = oldNode.next {
+            newNode!.next = Node(value: nextOldNode.value)
+            newNode = newNode!.next
+            
+            oldNode = nextOldNode
+        }
+        
+        tail = newNode
     }
     
     // Used for COW functionality
@@ -194,3 +209,12 @@ extension LinkedList: Collection {
         position.node!.value
     }
 }
+
+var list = LinkedList<Int>()
+for i in 0...9 {
+    list.append(i)
+}
+
+print(list)
+
+
